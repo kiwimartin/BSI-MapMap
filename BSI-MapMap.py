@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding: utf8
 # BSI-MapMap Tool
 
 import os
@@ -12,10 +13,10 @@ full_mapping = []
 
 # function found at https://blog.finxter.com/how-to-sort-a-list-alphabetically-in-python/
 # which points to https://stackoverflow.com/a/2669120
-def sorted_nicely(l): 
-    """ Sort the given iterable in the way that humans expect.""" 
-    convert = lambda text: int(text) if text.isdigit() else text 
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)] 
+def sorted_nicely(l):
+    """ Sort the given iterable in the way that humans expect."""
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     l.sort(key = alphanum_key)
 
 
@@ -41,7 +42,7 @@ def getmapping(filelist, mapvalue):
                         if lists[indexval] == mappingsign:
                             print(lists[0])
                             result.append(lists[0])
-                            full_mapping.append(lists[0])
+                            full_mapping.append(lists[0] + "--Mapped from: " + mapvalue)
                     except:
                         continue
 
@@ -53,14 +54,17 @@ def genTXT(mappinglist, KapNum):
     pages = []
 
     # Regex: <KAP>[\s\S]*?(?=\n\n)
-    
+
     with open("IT_Grundschutz_Kompendium_Edition2021.pdf", "rb") as f:
         pdf = pdftotext.PDF(f)
+
         for kat in mappinglist:
+            mod = kat.split("--")
+            kat = mod[0]
             for page in pdf:
                     regexmagic = re.findall(f'{kat}[\s\S]*?(?=\n\n)',page)
                     if regexmagic:
-                        pages.append(regexmagic[0])
+                        pages.append(mod[1] + " || " + regexmagic[0])
                         break
 
     outfile = open(f'Kategorie-{KapNum}-BSI200.txt', 'w')
@@ -149,7 +153,7 @@ for Subkategorie in Kategorien:
         #print(Element)
         mapped = getmapping(CSV_Tabellen, Element)
         kategoriegesamt.append(mapped)
-    
+
     print("========= RESULTAT =========\n")
     #print(f"Kapitel {Kategorienum} Resultat: " + str(kategoriegesamt) + "\n")
     empty = "|"
@@ -164,6 +168,6 @@ for Subkategorie in Kategorien:
     print(f"\nFull unique Mapping sortiert für Kategorie {Kategorienum}:\n")
     for chap in full_mapping:
         print(f"- {chap}")
-    
+
     genTXT(full_mapping, Kategorienum)
     Kategorienum += 1
